@@ -110,6 +110,12 @@ app.get('/home', (req,res) => {
   res.render('home');
 })
 
+app.get("/about", function (req, res) {
+  var color = req.query.color;
+  res.render("about", { color: color});
+});
+
+
 app.get('/contact', (req,res) => {
   var missingEmail = req.query.missing;
 
@@ -290,20 +296,19 @@ app.use(express.static(__dirname + "/public"));
 app.get("/login", (req, res) => {
   const emptyFields = req.query.emptyFields;
 
-  var html = `
-    log in
-    <form action='/loggingin' method='post'>
-    <input name='email' type='email' placeholder='email'><br>
-    <input name='password' type='password' placeholder='password'><br>
-    <button>Submit</button>
-    </form>
-    `;
+
   if (emptyFields) {
     html +=
       "<span style='color:red;'>Email and password is required.</span><br>";
   }
   res.send(html);
 });
+
+app.get('/admin', async(req,res) => {
+  const result = await userCollection.find().project({username: 1, _id: 1});
+  console.log(result);
+  res.render("admin", {users: result});
+})
 
 app.post("/loggingin", async (req, res) => {
   var username = req.body.username;
@@ -365,7 +370,7 @@ app.post("/logout", (req, res) => {
 
 app.get("*", (req, res) => {
   res.status(404);
-  res.send("Page not found - 404");
+  res.render("404");
 });
 
 app.listen(port, () => {
