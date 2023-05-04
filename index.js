@@ -28,6 +28,8 @@ var { database } = require("./databaseConnection.js");
 
 const userCollection = database.db(mongodb_database).collection("users");
 
+app.set('view engine', 'ejs');
+
 app.use(express.urlencoded({ extended: false }));
 
 var mongoStore = MongoStore.create({
@@ -103,6 +105,25 @@ app.get("/", (req, res) => {
     res.send(html);
   }
 });
+
+app.get('/home', (req,res) => {
+  res.render('home');
+})
+
+app.get('/contact', (req,res) => {
+  var missingEmail = req.query.missing;
+
+  res.render('contact', {missing: missingEmail});
+})
+
+app.post('/submitEmail', (req,res) => {
+  var email = req.body.email;
+  if(!email) {
+    res.redirect('/contact?missing=1');
+  } else {
+    res.render('submitEmail', {email: email});
+  }
+})
 
 app.get("/nosql-injection", async (req, res) => {
   var username = req.query.user;
