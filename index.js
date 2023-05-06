@@ -28,7 +28,7 @@ var { database } = require("./databaseConnection.js");
 
 const userCollection = database.db(mongodb_database).collection("users");
 
-app.set('view engine', 'ejs');
+app.set("view engine", "ejs");
 
 app.use(express.urlencoded({ extended: false }));
 
@@ -63,73 +63,43 @@ function requireLogin(req, res, next) {
   }
 }
 
-app.get("/", (req, res) => {
-  const user = req.session.authenticated;
+function isValidSession(req) {
+  return req.session.authenticated;
+}
 
-  if (!user) {
-    //user is not logged in
-    var html = `
-        <ul>
-          <li><a href="/signUp">Sign Up</a></li>
-          <li><a href="/login">Login</a></li>
-        </ul>
-        `;
-    res.send(html);
+function sessionValidation(req, res, next) {
+  if (isValidSession(req)) {
+    next();
   } else {
-    //user is logged in
-    const html = `
-      <style>
-      ul {
-        list-style: none; /* Remove bullet points */
-
-      }
-      button {
-        display: block; /* Display the buttons on different lines */
-      }
-    </style>
-      <h1>Hello, ${req.session.username}!</h1>
-      <p>Welcome back to our website!</p>
-      <ul>
-        <li>
-        <form action = "/members">
-        <button type="submit">Go to Members Area</button>
-        </form>
-        </li>
-        <li>
-          <form action="/logout" method="post">
-            <button type="submit">Log Out</button>
-          </form>
-        </li>
-      </ul>
-    `;
-    res.send(html);
+    res.redirect("/login");
   }
+}
+
+function isAdmin(req) {
+  return req.session.user_type === 'admin';
+}
+
+function adminAuthorization(req, res, next) {
+  if (!(isAdmin(req))) {
+    res.status(403);
+    res.render("errorMessage", { error: "Not Authorized" });
+    return;
+  } else {
+    next();
+  }
+}
+
+app.get("/", (req, res) => {
+  const username = req.session.username;
+  const user = req.session.authenticated;
+  res.render("home", {user : user, username: username});
 });
 
-app.get('/home', (req,res) => {
-  res.render('home');
-})
 
 app.get("/about", function (req, res) {
   var color = req.query.color;
-  res.render("about", { color: color});
+  res.render("about", { color: color });
 });
-
-
-app.get('/contact', (req,res) => {
-  var missingEmail = req.query.missing;
-
-  res.render('contact', {missing: missingEmail});
-})
-
-app.post('/submitEmail', (req,res) => {
-  var email = req.body.email;
-  if(!email) {
-    res.redirect('/contact?missing=1');
-  } else {
-    res.render('submitEmail', {email: email});
-  }
-})
 
 app.get("/nosql-injection", async (req, res) => {
   var username = req.query.user;
@@ -170,17 +140,9 @@ app.get("/nosql-injection", async (req, res) => {
 });
 
 app.get("/signUp", (req, res) => {
-  var html = `
-    create user
-    <form action='/submitUser' method='post'>
-    <input name='username' type='text' placeholder='name'><br>
-    <input name='email' type='email' placeholder='email'><br>
-    <input name='password' type='password' placeholder='password'><br>
-    <button>Submit</button>
-    </form>
-    `;
-  res.send(html);
+  res.render("signup");
 });
+
 
 app.get("/error", (req, res) => {
   const missingName = req.query.missingName;
@@ -258,57 +220,27 @@ app.post("/submitUser", async (req, res) => {
   res.redirect("/members");
 });
 
-const path = require("path");
-
-function randomImage() {
-  const images = [
-    "gif1.gif",
-    "gif2.gif",
-    "gif3.gif",
-    "gif4.gif",
-    "gif5.gif",
-    "gif6.gif",
-    "gif7.gif",
-    "gif8.gif",
-    "gif9.gif",
-    "gif10.gif",
-  ];
-  const imageIndex = Math.floor(Math.random() * images.length);
-  const randomImage = images[imageIndex];
-  return randomImage;
-}
-
 app.get("/members", requireLogin, (req, res) => {
-  user = req.session.username;
-  const image = randomImage();
-  var html = `
-      <h1>Hello ${user},</h1>
-      <img src='/${image}' style='width:250px;'><br>
-      <form action='/logout' method='post'><br>
-      <button>Sign Out</button>
-      </form>
-      `;
-  res.send(html);
+  const user = req.session.username;
+  res.render("members", { user: user });
 });
 
 app.use(express.static(__dirname + "/public"));
 
 app.get("/login", (req, res) => {
   const emptyFields = req.query.emptyFields;
-
-
-  if (emptyFields) {
-    html +=
-      "<span style='color:red;'>Email and password is required.</span><br>";
-  }
-  res.send(html);
+  res.render("login", { emptyFields: emptyFields });
 });
 
-app.get('/admin', async(req,res) => {
-  const result = await userCollection.find().project({username: 1, _id: 1});
-  console.log(result);
-  res.render("admin", {users: result});
-})
+
+app.get("/admin", sessionValidation, adminAuthorization, async (req, res) => {
+  const result = await userCollection
+    .find()
+    .project({ username: 1, _id: 1, user_type: 1 });
+  const users = await result.toArray();
+  console.log(users);
+  res.render("admin", { users: users });
+});
 
 app.post("/loggingin", async (req, res) => {
   var username = req.body.username;
@@ -330,7 +262,7 @@ app.post("/loggingin", async (req, res) => {
 
   const result = await userCollection
     .find({ email: email })
-    .project({ username: 1, email: 1, password: 1, _id: 1 })
+    .project({ username: 1, email: 1, password: 1, _id: 1, user_type: 1 })
     .toArray();
 
   console.log(result);
@@ -344,6 +276,7 @@ app.post("/loggingin", async (req, res) => {
     req.session.authenticated = true;
     req.session.username = result[0].username;
     req.session.email = email;
+    req.session.user_type = result[0].user_type; // set user_type in session
     req.session.cookie.maxAge = expireTime;
 
     res.redirect("/members");

@@ -1,10 +1,14 @@
 <%- include("templates/header") %>
 
-    <div class="container" style="margin-top: 80px">
+    <div class="container" style="margin-top: 40px">
         <br><br>
-        <h1 class="header center">Log In</h1>
-        <form action="/loggingin" method="post">
+        <h1 class="header center">Create User</h1>
+        <form action="/submitUser" method="post">
             <div class="row">
+                <div class="input-field col s12 m6 offset-m3">
+                    <input id="username" name="username" type="text" class="validate" required>
+                    <label for="username">Name</label>
+                </div>
                 <div class="input-field col s12 m6 offset-m3">
                     <input id="email" name="email" type="email" class="validate" required>
                     <label for="email">Email</label>
@@ -14,12 +18,7 @@
                     <label for="password">Password</label>
                 </div>
                 <div class="col s12 center-align">
-                    <% if (emptyFields) { %>
-                        <div class="red-text">
-                            Email and password are required.
-                        </div>
-                        <% } %>
-                            <button type="submit" class="waves-effect waves-light btn">Log In</button>
+                    <button type="submit" class="waves-effect waves-light btn">Submit</button>
                 </div>
             </div>
         </form>

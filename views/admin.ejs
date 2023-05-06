@@ -1,0 +1,21 @@
+<%- include("templates/header") %>
+    <div><h4>Users: </h4></div>
+    <ul class="collection">
+        <% let i=0; for(i=0; i < users.length; i++) { %>
+            <li class="collection-item avatar">
+                <i class="material-icons circle">person</i>
+                <span class="title">
+                    <%= users[i].username+ " (" + users[i].user_type + ")" %>
+                </span>
+                <p>
+                    <%= users[i].email %>
+                </p>
+                <% if (users[i].user_type==='user' ) { %>
+                    <a href="/promote/<%= users[i]._id %>" class="btn">Promote to Admin</a>
+                    <% } else { %>
+                        <a href="/demote/<%= users[i]._id %>" class="btn">Demote to User</a>
+                        <% } %>
+            </li>
+            <% } %>
+    </ul>
+<%- include("templates/footer") %>

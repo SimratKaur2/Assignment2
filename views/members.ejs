@@ -1,0 +1,21 @@
+<%- include("templates/header") %>
+
+    <div class="container-fluid">
+        <br><br>
+        <h1 class="header center">Welcome <%= user %>!</h1>
+        <div class="row">
+            <% const pandas=[ { src: "/panda1.jpg" , alt: "Panda 1" }, { src: "/panda3.jpg" , alt: "Panda 2" }, {
+                src: "/panda2.jpg" , alt: "Panda 3" }, ]; pandas.forEach(function(panda) { %>
+                <div class="col s12 m6 l4">
+                    <img class="responsive-img" src="<%= panda.src %>" alt="<%= panda.alt %>">
+                </div>
+                <% }); %>
+        </div>
+        <div class="right" style="padding-right: 10px; padding-bottom: 10px;">
+            <form action="/logout" method="post">
+                <button type="submit" class="waves-effect waves-light btn">Log Out</button>
+            </form>
+        </div>
+    </div>
+
+    <%- include("templates/footer") %>
