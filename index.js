@@ -5,6 +5,7 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const bcrypt = require("bcrypt");
 const saltRounds = 12;
+const mongodb = require('mongodb');
 
 const port = process.env.PORT || 3000;
 
@@ -241,6 +242,21 @@ app.get("/admin", sessionValidation, adminAuthorization, async (req, res) => {
   console.log(users);
   res.render("admin", { users: users });
 });
+
+//promoting a user to admin
+app.get("/promote/:id",sessionValidation,adminAuthorization,async(req,res) => {
+  const userId = req.params.id;
+  await userCollection.updateOne({_id: new mongodb.ObjectId(userId)}, {$set: {user_type: "admin"}});
+  res.redirect("/admin");
+})
+
+//demoting an admin to a user 
+app.get("/demote/:id",sessionValidation,adminAuthorization,async(req,res) => {
+  const userId = req.params.id;
+  await userCollection.updateOne({_id: new mongodb.ObjectId(userId)}, {$set: {user_type: "user"}});
+  res.redirect("/admin");
+})
+
 
 app.post("/loggingin", async (req, res) => {
   var username = req.body.username;
