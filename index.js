@@ -53,16 +53,16 @@ app.use(
 
 /*functions */
 
-function requireLogin(req, res, next) {
-  if (req.session.authenticated) {
-    //user is authenticated, so continue to the next middleware
-    next();
-  } else {
-    //user is redirected to the login page
-    console.log("you are not logged in");
-    res.redirect("/");
-  }
-}
+// function requireLogin(req, res, next) {
+//   if (req.session.authenticated) {
+//     //user is authenticated, so continue to the next middleware
+//     next();
+//   } else {
+//     //user is redirected to the login page
+//     console.log("you are not logged in");
+//     res.redirect("/");
+//   }
+// }
 
 function isValidSession(req) {
   return req.session.authenticated;
@@ -221,7 +221,7 @@ app.post("/submitUser", async (req, res) => {
   res.redirect("/members");
 });
 
-app.get("/members", requireLogin, (req, res) => {
+app.get("/members", sessionValidation, (req, res) => {
   const user = req.session.username;
   res.render("members", { user: user });
 });
@@ -305,11 +305,7 @@ app.post("/loggingin", async (req, res) => {
 });
 
 app.get("/loginSubmit", (req, res) => {
-  var html = `
-      Invalid email/password combination.<br>
-      <a href="/login">Try Again</a>
-      `;
-  res.send(html);
+  res.render("invalidEmail");
 });
 
 app.post("/logout", (req, res) => {
