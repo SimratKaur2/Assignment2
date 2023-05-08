@@ -209,6 +209,7 @@ app.post("/submitUser", async (req, res) => {
     username: username,
     email: email,
     password: hashedPassword,
+    user_type: "user"
   });
   console.log("Inserted user");
 
