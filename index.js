@@ -239,7 +239,7 @@ app.get("/admin", sessionValidation, adminAuthorization, async (req, res) => {
     .find()
     .project({ username: 1, _id: 1, user_type: 1 });
   const users = await result.toArray();
-  console.log(users);
+  // console.log(users);
   res.render("admin", { users: users });
 });
 

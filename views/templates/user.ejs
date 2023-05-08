@@ -1,1 +1,12 @@
-<li> <%= user.username %> </li>
+<i class="material-icons circle">person</i>
+<span class="title">
+  <%= user.username + " (" + user.user_type + ")" %>
+</span>
+<p>
+  <%= user.email %>
+</p>
+<% if (user.user_type === 'user') { %>
+<a href="/promote/<%= user._id %>" class="btn">Promote to Admin</a>
+<% } else { %>
+<a href="/demote/<%= user._id %>" class="btn">Demote to User</a>
+<% } %>
