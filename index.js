@@ -235,8 +235,10 @@ app.get("/login", (req, res) => {
 
 
 app.get("/admin", sessionValidation, adminAuthorization, async (req, res) => {
+  const currentUser = req.session.email;
+
   const result = await userCollection
-    .find()
+    .find({ email: { $ne: currentUser}})
     .project({ username: 1, _id: 1, user_type: 1 });
   const users = await result.toArray();
   // console.log(users);
@@ -248,14 +250,14 @@ app.get("/promote/:id",sessionValidation,adminAuthorization,async(req,res) => {
   const userId = req.params.id;
   await userCollection.updateOne({_id: new mongodb.ObjectId(userId)}, {$set: {user_type: "admin"}});
   res.redirect("/admin");
-})
+});
 
 //demoting an admin to a user 
 app.get("/demote/:id",sessionValidation,adminAuthorization,async(req,res) => {
   const userId = req.params.id;
   await userCollection.updateOne({_id: new mongodb.ObjectId(userId)}, {$set: {user_type: "user"}});
   res.redirect("/admin");
-})
+});
 
 
 app.post("/loggingin", async (req, res) => {
